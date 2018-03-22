@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate failure;
 extern crate reqwest;
 extern crate serde;
@@ -20,6 +21,14 @@ fn main() {
 }
 
 fn run() -> Result<(), Error> {
+    // get # of posts to get
+    let args = env::args();
+    let n: usize = args
+        .skip(1)
+        .next()
+        .ok_or(format_err!("please enter number of posts to get"))?
+        .parse()?;
+
     // get reddit api call and
     let client = reqwest::Client::new();
 
@@ -30,14 +39,14 @@ fn run() -> Result<(), Error> {
 
     // now get posts since latest post id
     let token = "";
-    let (after, new_posts) = get_new_posts(&client, "rust", token)?;
+    let (after, new_posts) = get_new_posts(&client, "rust", token, n)?;
 
     for post in new_posts.iter() {
+        println!("\n{}", post.title);
         if post.domain != "self.rust" {
-            println!("\nPOST: {}, by {}", post.title, post.author);
-            println!("{}", post.url)
-        } else {
+            println!("  {}", post.url);
         }
+        println!("  https://reddit.com{}", post.permalink);
     }
 
     //for header in res.headers().iter() {
@@ -64,13 +73,14 @@ fn get_new_posts(
     client: &reqwest::Client,
     subreddit: &str,
     token: &str,
+    n: usize,
     ) -> Result<(String, Vec<PostData>), Error>
 {
     let url = format!("https://oauth.reddit.com/r/{}/new.json", subreddit);
     let mut res: RedditNew = client.get(&url)
         .header(UserAgent::new(USER_AGENT))
         .header(Authorization( Bearer { token: token.to_owned() } ) )
-        .query(&[("limit", 10)])
+        .query(&[("limit", n)])
         .send()?
         .json()?;
 
