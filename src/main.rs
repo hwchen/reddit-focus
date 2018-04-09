@@ -22,12 +22,14 @@ fn main() {
 
 fn run() -> Result<(), Error> {
     // get # of posts to get
-    let args = env::args();
+    let mut args = env::args();
     let n: usize = args
+        .by_ref()
         .skip(1)
         .next()
         .ok_or(format_err!("please enter number of posts to get"))?
         .parse()?;
+    let subreddit = args.next().unwrap_or("rust".to_owned());
 
     // get reddit api call and
     let client = reqwest::Client::new();
@@ -39,7 +41,7 @@ fn run() -> Result<(), Error> {
 
     // now get posts since latest post id
     let token = "";
-    let (after, new_posts) = get_new_posts(&client, "rust", token, n)?;
+    let (after, new_posts) = get_new_posts(&client, &subreddit, token, n)?;
 
     for post in new_posts.iter() {
         println!("\n{}", post.title);
@@ -77,7 +79,7 @@ fn get_new_posts(
     ) -> Result<(String, Vec<PostData>), Error>
 {
     let url = format!("https://oauth.reddit.com/r/{}/new.json", subreddit);
-    let mut res: RedditNew = client.get(&url)
+    let res: RedditNew = client.get(&url)
         .header(UserAgent::new(USER_AGENT))
         .header(Authorization( Bearer { token: token.to_owned() } ) )
         .query(&[("limit", n)])
