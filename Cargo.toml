@@ -5,6 +5,6 @@ version = "0.1.0"
 
 [dependencies]
 failure = "0.1.1"
-reqwest = "0.8.5"
-serde = "1.0.33"
-serde_derive = "1.0.33"
+reqwest = "0.9.19"
+serde = "1.0.98"
+serde_derive = "1.0.98"

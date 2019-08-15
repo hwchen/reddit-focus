@@ -6,12 +6,12 @@ extern crate serde;
 extern crate serde_derive;
 
 use failure::Error;
-use reqwest::header::{UserAgent, Authorization, Bearer};
+use reqwest::header::{USER_AGENT, AUTHORIZATION};
 use std::collections::HashMap;
 use std::env;
 
 const TOKEN_ENDPOINT: &str = "https://www.reddit.com/api/v1/access_token";
-const USER_AGENT: &str = "linux:reddit-focus:v0.0.1 (by /u/hwchen)";
+const MY_USER_AGENT: &str = "linux:reddit-focus:v0.0.1 (by /u/hwchen)";
 const CLIENT_ID: &str = "8YAYsOZ17tKZ_g";
 
 fn main() {
@@ -80,8 +80,8 @@ fn get_new_posts(
 {
     let url = format!("https://oauth.reddit.com/r/{}/new.json", subreddit);
     let res: RedditNew = client.get(&url)
-        .header(UserAgent::new(USER_AGENT))
-        .header(Authorization( Bearer { token: token.to_owned() } ) )
+        .header(USER_AGENT, MY_USER_AGENT)
+        .header(AUTHORIZATION, format!("Bearer {}", token.to_owned()))
         .query(&[("limit", n)])
         .send()?
         .json()?;
